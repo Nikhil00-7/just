@@ -67,7 +67,7 @@ post{
        )
   }
   failure {
-          emialext(
+          emailext(
             to: "kujurnikhil0007@gmail.com",
             subject: "FAILED: Build ${env.BUILD_NUMBER}",
             body: """ 
