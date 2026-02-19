@@ -50,7 +50,6 @@ pipeline {
           }
         }
      }
-}
 
 post{
   success {
@@ -79,4 +78,5 @@ post{
             """
           )
   }
+}
 }
