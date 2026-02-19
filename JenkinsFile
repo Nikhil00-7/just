@@ -60,8 +60,10 @@ pipeline {
       stage("copy files to k8s"){
         steps{
            sshagent(['k8s-master-ssh']){
+            sh ''' 
             sh 'scp ${jenkinsOne.yaml}  ubuntu@192.168.2.20:/home/ubuntu/'
             sh 'scp ${service.yaml}   ubuntu@192.168.2.20:/home/ubuntu/' 
+            '''
            }
         }
       }
