@@ -3,7 +3,7 @@ pipeline {
   agent any 
 
      tools{
-       nodejs  'nodejs22'
+       nodejs  'node22'
      }
      environment {
          DOCKER_USER= "docdon0007"
