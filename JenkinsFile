@@ -10,7 +10,7 @@ pipeline {
          IMAGE = 'jenkins'
          TAG ="01" 
          DOCKER_IMAGE= "${DOCKER_USER}/${IMAGE}:${TAG}"
-         DOCKER_CREDENTIALS = "dockerhub-login"
+ 
          PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
      }
 
@@ -42,7 +42,7 @@ pipeline {
         stage("Docker login & push"){
           steps{
              sh 'docker build -t  $DOCKER_IMAGE .'
-             withCredentials([usernamePassword(credentialsId: '$DOCKER_CREDENTIALS' , usernameVariable: 'USER' , passwordVariable: 'PASS')]){
+             withCredentials([usernamePassword(credentialsId: 'dockerhub-login' , usernameVariable: 'USER' , passwordVariable: 'PASS')]){
    
              sh 'echo $PASS | docker login -u $USER --password-stdin'
              sh 'docker push $DOCKER_IMAGE'
