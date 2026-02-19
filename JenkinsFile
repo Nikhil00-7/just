@@ -61,9 +61,8 @@ pipeline {
         steps{
            sshagent(['k8s-master-ssh']){
             sh ''' 
-            sh 'scp ${jenkinsOne.yaml}  ubuntu@192.168.2.20:/home/ubuntu/'
-            sh 'scp ${service.yaml}   ubuntu@192.168.2.20:/home/ubuntu/' 
-
+            sh scp ${jenkinsOne.yaml}  ubuntu@192.168.2.20:/home/ubuntu/
+            sh scp ${service.yaml}   ubuntu@192.168.2.20:/home/ubuntu/
             '''
            }
         }
@@ -72,8 +71,10 @@ pipeline {
       stage("deploy"){
         steps{
           sshagent(['k8s-master-ssh']){
+            sh  ''' 
           ssh -o StrictHostKeyChecking=no ubuntu@192.168.2.20 "kubectl apply -f /home/ubuntu/${jenkinsOne.yaml}"
           ssh -o StrictHostKeyChecking=no ubuntu@192.168.2.20  "kubectl apply -f /home/ubuntu/${service.yaml}"
+          '''
           }
         }
       }
