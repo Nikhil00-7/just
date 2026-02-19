@@ -1,0 +1,82 @@
+pipeline {
+  
+  agent any 
+
+     tools{
+       nodejs  'nodejs22'
+     }
+     environment {
+         DOCKER_USER= "docdon0007"
+         IMAGE = 'jenkins'
+         TAG ="01" 
+         DOCKER_IMAGE= "${DOCKER_USER}/${IMAGE}:${TAG}"
+         DOCKER_CREDENTIALS = "dockerhub-login"
+         PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+     }
+
+     stages{
+        stage('Checkout code'){
+          steps{
+             git branch : 'main' ,url: "https://github.com/Nikhil00-7/just.git"
+          }
+        }
+
+        stage("Install Dependancy"){
+          steps{
+            sh 'npm -v'
+            sh 'node -v'
+            sh 'npm install'
+          }
+        }
+        stage("Run tests"){
+          steps{
+            sh 'npm test'
+          }
+        }
+        stage ("Build"){
+          steps{
+            sh 'npm run build || echo "No build script"'
+          }
+        }
+
+        stage("Docker login & push"){
+          steps{
+             sh 'docker build -t  $DOCKER_IMAGE .'
+             withCredentials([usernamePassword(credentialsId: 'DOCKER_CREDENTIALS' , usernameVariable: 'USER' , passwordVariable: 'PASS')]){
+   
+             sh 'echo $PASS | docker login -u $USER --password-stdin'
+             sh 'docker push $DOCKER_IMAGE'
+             }
+          }
+        }
+     }
+}
+
+post{
+  success {
+       emailext(
+         to: "kujurnikhil0007@gmail.com",
+         subject: "SUCCESS: Build ${env.BUILD_NUMBER}",
+         body: """
+           Build Successfull 
+
+           Job Name: ${env.JOB_NAME}
+           Build Number: ${env.BUILD_NUMBER}
+           Build URL: ${env.BUILD_URL}
+         """
+       )
+  }
+  failure {
+          emialext(
+            to: "kujurnikhil0007@gmail.com",
+            subject: "FAILED: Build ${env.BUILD_NUMBER}",
+            body: """ 
+            Build  Failed
+
+            Job Name: ${env.JOB_NAME}
+            Build Number: ${env.BUILD_NUMBER}
+            Build URL: ${env.BUILD_URL}
+            """
+          )
+  }
+}
