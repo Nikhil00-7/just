@@ -11,6 +11,7 @@ pipeline {
     IMAGE = "jenkins"
     TAG = "01"
     DOCKER_IMAGE = "${DOCKER_USER}/${IMAGE}:${TAG}"
+     PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
   }
 
   stages {
