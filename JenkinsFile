@@ -1,4 +1,4 @@
- @Library('devops-lib') _
+//  @Library('devops-lib') _
 // node {
 // nodeJsPipeline(
 //   nodeVersion : 'node22',
@@ -16,52 +16,53 @@
 // }
 
 
+@Library('devops-lib') _
+
 pipeline {
-   
-   agent any 
+    agent any
 
-      node nodeVersion()
-
-    environment{
-     DOCKER_IMAGE= 'docdon0007/jenkins:05'
-    
-    }
-    stages{
-      stage('checkout code'){
-        steps{
-           checkout('https://github.com/Nikhil00-7/just.git', 'main')
-        }
-      }
-      stage('install dependancy'){
-        steps{
-           installDependancy()
-        }
-      }
-      stage("Run test"){
-        steps{
-          runTest()
-        }
-      }
-      stage("Docker push"){
-        steps{
-             dockerPush("$DOCKER_IMAGE" , "dockerhub-login") 
-        }
-      }
-      stage("K8s-deploy"){
-        steps{
-          k8s("k8s-master-ssh" , "192.168.2.20")
-        }
-      }
-    
-    
+    environment {
+        DOCKER_IMAGE = 'docdon0007/jenkins:05'
     }
 
-    post{
-      success{
-           successPost("kujurnikhil@gmail.com")
-      }
-      failure{
-        failedPost("kujurnikhil@gmail.com")
-      }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Nikhil00-7/just.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                installDependencies()
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                runTests()
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                dockerPush(DOCKER_IMAGE, 'dockerhub-login')
+            }
+        }
+
+        stage('K8s Deploy') {
+            steps {
+                k8s('k8s-master-ssh', '192.168.2.20')
+            }
+        }
+    }
+
+    post {
+        success {
+            successPost('kujurnikhil@gmail.com')
+        }
+        failure {
+            failedPost('kujurnikhil@gmail.com')
+        }
     }
 }
