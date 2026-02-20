@@ -1,4 +1,4 @@
-@Library('devops-lib')
+@Library('devops-lib') _
 node {
 nodeJsPipeline(
   nodeVersion : 'node22',
