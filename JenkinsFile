@@ -1,5 +1,5 @@
 @Library('devops-lib')
-
+node {
 nodeJsPipeline(
   nodeVersion : 'node22',
   dockerUser: 'docdon0007',
@@ -12,3 +12,5 @@ nodeJsPipeline(
   k8sIp: '192.168.2.20',
   email: 'kujurnikhil0007@gmail.com'
 )
+
+}
