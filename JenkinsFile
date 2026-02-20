@@ -1,16 +1,67 @@
-@Library('devops-lib') _
-node {
-nodeJsPipeline(
-  nodeVersion : 'node22',
-  dockerUser: 'docdon0007',
-  image: 'jenkins' ,
-  tag: '04',
-  branch: 'main',
-  repoUrl: 'https://github.com/Nikhil00-7/just.git',
-  dockerCreds: 'dockerhub-login',
-  k8sCreds: 'k8s-master-ssh',
-  k8sIp: '192.168.2.20',
-  email: 'kujurnikhil0007@gmail.com'
-)
+ @Library('devops-lib') _
+// node {
+// nodeJsPipeline(
+//   nodeVersion : 'node22',
+//   dockerUser: 'docdon0007',
+//   image: 'jenkins' ,
+//   tag: '04',
+//   branch: 'main',
+//   repoUrl: 'https://github.com/Nikhil00-7/just.git',
+//   dockerCreds: 'dockerhub-login',
+//   k8sCreds: 'k8s-master-ssh',
+//   k8sIp: '192.168.2.20',
+//   email: 'kujurnikhil0007@gmail.com'
+// )
 
+// }
+
+
+pipeline {
+   
+   agent any 
+
+      node nodeVersion()
+
+    environment{
+     DOCKER_IMAGE= 'docdon0007/jenkins:05'
+    
+    }
+    stages{
+      stage('checkout code'){
+        steps{
+           checkout('https://github.com/Nikhil00-7/just.git', 'main')
+        }
+      }
+      stage('install dependancy'){
+        steps{
+           installDependancy()
+        }
+      }
+      stage("Run test"){
+        steps{
+          runTest()
+        }
+      }
+      stage("Docker push"){
+        steps{
+             dockerPush("$DOCKER_IMAGE" , "dockerhub-login") 
+        }
+      }
+      stage("K8s-deploy"){
+        steps{
+          k8s("k8s-master-ssh" , "192.168.2.20")
+        }
+      }
+    
+    
+    }
+
+    post{
+      success{
+           successPost("kujurnikhil@gmail.com")
+      }
+      failur{
+        failedPost("kujurnikhil@gmail.com")
+      }
+    }
 }
