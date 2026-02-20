@@ -60,7 +60,7 @@ pipeline {
       success{
            successPost("kujurnikhil@gmail.com")
       }
-      failur{
+      failure{
         failedPost("kujurnikhil@gmail.com")
       }
     }
