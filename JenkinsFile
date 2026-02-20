@@ -1,118 +1,14 @@
-pipeline {
+@Library('devops-lib')
 
-  agent any 
-
-  tools {
-    nodejs 'node22'
-  }
-
-  environment {
-    DOCKER_USER = "docdon0007"
-    IMAGE = "jenkins"
-    TAG = "01"
-    DOCKER_IMAGE = "${DOCKER_USER}/${IMAGE}:${TAG}"
-     PATH = "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-  }
-
-  stages {
-
-    stage('Checkout code') {
-      steps {
-        git branch: 'main', url: "https://github.com/Nikhil00-7/just.git"
-      }
-    }
-
-    stage("Install Dependency") {
-      steps {
-        sh 'npm install'
-      }
-    }
-
-    stage("Run tests") {
-      steps {
-        sh 'npm test'
-      }
-    }
-
-    stage("Build") {
-      steps {
-        sh 'npm run build || echo "No build script"'
-      }
-    }
-
-    stage("Docker login & push") {
-      steps {
-        sh 'docker build -t $DOCKER_IMAGE .'
-
-        withCredentials([usernamePassword(
-          credentialsId: 'dockerhub-login',
-          usernameVariable: 'USER',
-          passwordVariable: 'PASS'
-        )]) {
-
-          sh 'echo $PASS | docker login -u $USER --password-stdin'
-          sh 'docker push $DOCKER_IMAGE'
-        }
-      }
-    }
-
-    stage("Archive Artifact") {
-      steps {
-        archiveArtifacts artifacts: '**/*.js', fingerprint: true
-      }
-    }
-
-    stage("Copy files to k8s") {
-      steps {
-        sshagent(['k8s-master-ssh']) {
-          sh '''
-            scp -o StrictHostKeyChecking=no jenkinsOne.yaml ubuntu@192.168.2.20:/home/ubuntu/
-            scp -o StrictHostKeyChecking=no service.yaml ubuntu@192.168.2.20:/home/ubuntu/
-          '''
-        }
-      }
-    }
-
-    stage("Deploy to k8s") {
-      steps {
-        sshagent(['k8s-master-ssh']) {
-          sh '''
-            ssh -o StrictHostKeyChecking=no ubuntu@192.168.2.20 "kubectl apply -f /home/ubuntu/jenkinsOne.yaml"
-            ssh -o StrictHostKeyChecking=no ubuntu@192.168.2.20 "kubectl apply -f /home/ubuntu/service.yaml"
-          '''
-        }
-      }
-    }
-  }
-
-  post {
-
-    success {
-      emailext(
-        to: "kujurnikhil0007@gmail.com",
-        subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-        body: """
-Build Successful!
-
-Job Name: ${env.JOB_NAME}
-Build Number: ${env.BUILD_NUMBER}
-Build URL: ${env.BUILD_URL}
-"""
-      )
-    }
-
-    failure {
-      emailext(
-        to: "kujurnikhil0007@gmail.com",
-        subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-        body: """
-Build Failed!
-
-Job Name: ${env.JOB_NAME}
-Build Number: ${env.BUILD_NUMBER}
-Build URL: ${env.BUILD_URL}
-"""
-      )
-    }
-  }
-}
+nodeJsPipeline(
+  nodeVersion : 'node22',
+  dockerUser: 'docdon0007',
+  image: 'jenkins' ,
+  tag: '04',
+  branch: 'main',
+  repoUrl: 'https://github.com/Nikhil00-7/just.git',
+  dockerCreds: 'dockerhub-login',
+  k8sCreds: 'k8s-master-ssh',
+  k8sIp: '192.168.2.20',
+  email: 'kujurnikhil0007@gmail.com'
+)
